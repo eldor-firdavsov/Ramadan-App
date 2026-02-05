@@ -8,6 +8,22 @@ import { Tasbih } from './components/Tasbih';
 import { Home as HomeIcon, CheckSquare, Clock, Circle } from 'lucide-react';
 
 export default function App() {
+
+  useEffect(() => {
+    // Telegram WebApp obyektini olish
+    const tg = window.Telegram.WebApp;
+    
+    // Ilovani ochilganda to'liq ekranga yoyish
+    tg.expand();
+    
+    // Telegram yuqori paneli rangini bizning dizaynga moslash (Emerald 600)
+    tg.setHeaderColor('#059669');
+
+    // Ilovani tayyor deb e'lon qilish
+    tg.ready();
+  }, []);
+
+  
   const [currentPage, setCurrentPage] = useState('home');
   const [routine, setRoutine] = useState([
     { id: 'fajr', label: 'Bomdod Namozi', completed: false },

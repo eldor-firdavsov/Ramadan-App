@@ -1,5 +1,5 @@
 import './App.css'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { Home } from './components/Home';
 import { DailyRoutine } from './components/DailyRoutine';
@@ -8,23 +8,36 @@ import { Tasbih } from './components/Tasbih';
 import { Home as HomeIcon, CheckSquare, Clock, Circle } from 'lucide-react';
 
 export default function App() {
+  const [currentPage, setCurrentPage] = useState('home');
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef(null);
+
+  const [tasbih, setTasbih] = useState(() => {
+    // localStorage'dan ma'lumotni yuklash
+    const saved = localStorage.getItem('tasbihData');
+    return saved ? JSON.parse(saved) : { today: 0, monthlyTotal: 0, date: new Date().toDateString() };
+  });
 
   useEffect(() => {
-    // Telegram WebApp obyektini olish
-    const tg = window.Telegram.WebApp;
-    
-    // Ilovani ochilganda to'liq ekranga yoyish
-    tg.expand();
-    
-    // Telegram yuqori paneli rangini bizning dizaynga moslash (Emerald 600)
-    tg.setHeaderColor('#059669');
-
-    // Ilovani tayyor deb e'lon qilish
-    tg.ready();
+    const tg = window.Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      // Hujjatdagi kabi iOS 26 uslubida header rangini sozlash
+      tg.setHeaderColor('#059669'); 
+    }
   }, []);
 
-  
-  const [currentPage, setCurrentPage] = useState('home');
+  // Minimize on scroll mantiqi (Hujjatdagi tabBarMinimizeBehavior: 'onScrollDown' kabi)
+  const handleScroll = (e) => {
+    const scrollTop = e.currentTarget.scrollTop;
+    if (scrollTop > 50) {
+      setIsScrolling(true);
+    } else {
+      setIsScrolling(false);
+    }
+  };
+
   const [routine, setRoutine] = useState([
     { id: 'fajr', label: 'Bomdod Namozi', completed: false },
     { id: 'dhuhr', label: 'Peshin Namozi', completed: false },
@@ -36,7 +49,7 @@ export default function App() {
     { id: 'quran', label: 'Qur’on mutolaasi', completed: false },
     { id: 'zikr', label: 'Kundalik zikrlar', completed: false },
   ]);
-  const [tasbih, setTasbih] = useState({ today: 0, monthlyTotal: 0, date: new Date().toDateString() });
+
 
   const navItems = [
     { id: 'home', label: 'Asosiy', icon: HomeIcon },
@@ -48,39 +61,35 @@ export default function App() {
   const handleTabChange = (id) => {
     if (currentPage !== id) {
       setCurrentPage(id);
-      if (typeof window !== 'undefined' && window.navigator.vibrate) {
-        window.navigator.vibrate(10); // Haptic feedback
+      // Telegram Native Haptic Feedback (Hujjatga mos ravishda)
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
       }
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCF9] text-slate-900 font-sans selection:bg-emerald-100 overflow-hidden relative">
+    <div className="min-h-screen bg-[#FDFCF9] text-slate-900 font-sans overflow-hidden relative">
       
-      {/* iOS Style Background Blur Elements */}
+      {/* Background Decor */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-100/30 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[10%] right-[-10%] w-[40%] h-[40%] bg-orange-100/20 rounded-full blur-[100px]" />
+        <div className="absolute top-[-5%] left-[-5%] w-[60%] h-[40%] bg-emerald-100/40 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[5%] right-[-5%] w-[50%] h-[40%] bg-orange-50/30 rounded-full blur-[100px]" />
       </div>
 
-      {/* Modern Status Notch */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-32 h-1.5 bg-slate-200/50 rounded-b-2xl z-[100] backdrop-blur-md" />
-
-      <main className="relative h-screen w-full z-10 overflow-hidden">
+      <main 
+        onScroll={handleScroll}
+        className="relative h-screen w-full z-10 overflow-y-auto overflow-x-hidden scroll-smooth"
+      >
         <LayoutGroup>
-          <AnimatePresence mode="wait" initial={false}>
+          <AnimatePresence mode="wait">
             <motion.div
               key={currentPage}
-              initial={{ opacity: 0, y: 12, scale: 0.98, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -12, scale: 0.98, filter: "blur(10px)" }}
-              transition={{ 
-                type: "spring", 
-                stiffness: 300, 
-                damping: 30,
-                mass: 0.8
-              }}
-              className="h-full w-full overflow-y-auto px-4 pb-36 pt-6 scroll-smooth"
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: -10 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="min-h-full w-full px-4 pb-44 pt-8"
             >
               <div className="max-w-md mx-auto">
                 {currentPage === 'home' && <Home />}
@@ -93,63 +102,57 @@ export default function App() {
         </LayoutGroup>
       </main>
 
-      {/* Perfect Liquid Glass Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-[100] px-6 pb-8 pt-4 pointer-events-none">
-        <motion.div 
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          className="max-w-[400px] mx-auto pointer-events-auto"
-        >
-          <div className="relative group shadow-[0_20px_50px_rgba(0,0,0,0.12)]">
-            {/* The Ultimate Glass Layer */}
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-[32px] rounded-[2.5rem] border border-white/60 ring-1 ring-black/[0.03]" />
-            
-            <div className="relative flex justify-around items-center h-[80px] px-3">
-              {navItems.map((item) => {
-                const isActive = currentPage === item.id;
-                const Icon = item.icon;
+      {/* Native Style Bottom Tabs 
+          `isScrolling` bo'lganda menyu kichrayadi (Minimize behavior)
+      */}
+      <nav className={`fixed bottom-0 left-0 right-0 z-[100] px-6 pb-10 pt-4 transition-all duration-500 ease-out ${isScrolling ? 'translate-y-4 scale-95 opacity-80' : 'translate-y-0 scale-100 opacity-100'}`}>
+        <div className="max-w-[420px] mx-auto relative group">
+          
+          {/* Liquid Glass Layer */}
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-[30px] rounded-[2.5rem] border border-white/80 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.1)] ring-1 ring-black/[0.02]" />
+          
+          <div className="relative flex justify-around items-center h-[76px] px-2">
+            {navItems.map((item) => {
+              const isActive = currentPage === item.id;
+              const Icon = item.icon;
 
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => handleTabChange(item.id)}
-                    className="relative flex-1 flex flex-col items-center justify-center h-full z-10 transition-all active:scale-90 touch-none outline-none"
-                  >
-                    <div className="relative py-2 px-4 rounded-2xl flex flex-col items-center gap-1.5">
-                      {/* Animated Glow Backlight */}
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.div 
-                            layoutId="navGlow"
-                            className="absolute inset-0 bg-emerald-600 rounded-[1.5rem] shadow-[0_10px_20px_rgba(5,150,105,0.25)]"
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                          />
-                        )}
-                      </AnimatePresence>
-                      
-                      <div className={`relative z-20 transition-all duration-500 ${isActive ? 'text-white scale-110' : 'text-slate-400'}`}>
-                        <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                      </div>
-
-                      <AnimatePresence>
-                        {isActive && (
-                          <motion.span 
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute -bottom-3.5 text-[10px] font-black uppercase tracking-[0.15em] text-emerald-800 whitespace-nowrap"
-                          >
-                            {item.label}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleTabChange(item.id)}
+                  className="relative flex-1 flex flex-col items-center justify-center h-full touch-none outline-none"
+                >
+                  <div className="relative py-2 px-4 flex flex-col items-center">
+                    {/* Active Glow Indicator */}
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div 
+                          layoutId="activeTabGlow"
+                          className="absolute inset-0 bg-emerald-600 rounded-2xl shadow-lg shadow-emerald-900/20"
+                          transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                        />
+                      )}
+                    </AnimatePresence>
+                    
+                    <div className={`relative z-10 transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-400'}`}>
+                      <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+
+                    {!isScrolling && isActive && (
+                      <motion.span 
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute -bottom-4 text-[9px] font-black uppercase tracking-widest text-emerald-900 whitespace-nowrap"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </motion.div>
+        </div>
       </nav>
     </div>
   );

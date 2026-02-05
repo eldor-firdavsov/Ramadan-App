@@ -33,9 +33,9 @@ export function DailyRoutine({ routine, setRoutine }) {
   const progress = (completedCount / totalCount) * 100;
 
   return (
-    <div className="px-4 py-6 max-w-md mx-auto bg-[#FFFFFF] min-h-screen space-y-6">
+    <div className="px-4 py-6 max-w-md mx-auto bg-[#FFFFFF] min-h-screen space-y-6 rounded-[1.4rem]">
       <div className="space-y-3">
-        <div className="flex items-center justify-between text-sm font-medium">
+        <div className="flex items-center justify-between text-sm font-medium ">
           <span>Bugungi progress</span>
           <span>{completedCount}/{totalCount}</span>
         </div>

@@ -23,7 +23,7 @@ export function Home() {
   })();
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen text-slate-800 font-sans">
+    <div className="bg-[#FFFFFF] min-h-screen text-slate-800 font-sans rounded-[1.4rem]">
       <main className="max-w-md mx-auto px-6 py-10">
         <div className="flex justify-between items-center mb-10 px-1">
           <div className="flex items-center gap-2">

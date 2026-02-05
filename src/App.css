@@ -28,10 +28,7 @@
     --text-muted: 0.75rem;         /* text-xs */
   }
   
-  html, *{
-    /* overflow: hidden; */
-
-  }
+ 
 
   body{
     background-color: #FDFCF9;

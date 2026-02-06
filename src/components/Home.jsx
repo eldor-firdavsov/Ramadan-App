@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sunrise, Sunset, MapPin } from 'lucide-react';
+import { Moon, Sunrise, Sunset, MapPin, BookOpen, Sun } from 'lucide-react';
 import { ramadanTimetable, DEV_MODE } from '../data';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export function Home() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -15,69 +16,124 @@ export function Home() {
 
   if (!todayData) return null;
 
-  const isFasting = (() => {
-    const now = currentTime.getHours() * 60 + currentTime.getMinutes();
-    const [sH, sM] = todayData.fajr.split(':').map(Number);
-    const [iH, iM] = todayData.maghrib.split(':').map(Number);
-    return now >= (sH * 60 + sM) && now < (iH * 60 + iM);
-  })();
+  const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+  const [sH, sM] = todayData.fajr.split(':').map(Number);
+  const [iH, iM] = todayData.maghrib.split(':').map(Number);
+  
+  const isFasting = nowMinutes >= (sH * 60 + sM) && nowMinutes < (iH * 60 + iM);
+
+  // Duolar ma'lumoti
+  const duaData = isFasting 
+    ? {
+        title: "Iftorlik duosi",
+        arabic: "اللّٰهُمَّ اِنِّى لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلٰى رِزْقِكَ اَفْطَرْتُ",
+        reading: "Allohumma inni laka sumtu va bika aamantu va alayka tavakkaltu va ala rizqika aftartu",
+        translation: "Allohim, Sening uchun ro'za tutdim, Senga iymon keltirdim va Senga tavakkal qildim va bergan rizqing bilan iftor qildim."
+      }
+    : {
+        title: "Saharlik (Niyat) duosi",
+        arabic: "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
+        reading: "Va bisovmi ghadin navaytu min shahri ramazon",
+        translation: "Ramazon oyining ertangi ro'zasini tutishni niyat qildim."
+      };
 
   return (
-    <div className="bg-[#FFFFFF] min-h-screen text-slate-800 font-sans rounded-[1.4rem]">
-      <main className="max-w-md mx-auto px-6 py-10">
-        <div className="flex justify-between items-center mb-10 px-1">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white">
-              <Moon size={16} fill="currentColor" />
+    <div className="bg-[#FAFAFA] min-h-screen text-slate-800 font-sans pb-20">
+      <main className="max-w-md mx-auto px-6 py-8">
+        
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8 px-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-200">
+              <Moon size={18} fill="currentColor" />
             </div>
             <div>
-              <h1 className="text-sm font-bold tracking-tight text-slate-900">Ramazon 1447</h1>
-              <div className="flex items-center gap-1 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                <MapPin size={10} /> Samarqand, Urgut
+              <h1 className="text-sm font-black tracking-tight text-slate-900 uppercase">Ramazon 1447</h1>
+              <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold uppercase tracking-wider">
+                <MapPin size={10} /> Urgut, Samarqand
               </div>
             </div>
           </div>
-          <div className="text-right text-sm font-bold text-slate-900">
-            {currentTime.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' })}
+          <div className="text-right">
+             <div className="text-xs font-bold text-slate-400 uppercase tracking-tighter">Bugun</div>
+             <div className="text-sm font-black text-slate-900">{currentTime.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'long' })}</div>
           </div>
         </div>
 
-        <div className={`relative overflow-hidden rounded-[2rem] p-8 mb-8 ${isFasting ? 'bg-emerald-600' : 'bg-slate-900'} text-white shadow-xl`}>
-          <div className="relative z-10 text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60 mb-2">Hozirgi holat</p>
-            <h2 className="text-4xl font-bold tracking-tight mb-1">{isFasting ? "Ro'za" : "Iftor"}</h2>
-            <div className="text-sm font-medium opacity-80">{currentTime.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}</div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-3xl p-6 mb-8 border border-slate-100 shadow-sm flex justify-around items-center">
-          <div className="text-center">
-            <div className="text-2xl font-black text-slate-900">{todayData.day}</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kuni</div>
-          </div>
-          <div className="h-8 w-[1px] bg-slate-100"></div>
-          <div className="text-center">
-            <div className="text-2xl font-black text-slate-900">{30 - todayData.day}</div>
-            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Kun qoldi</div>
-          </div>
-        </div>
-
-        <div className="grid gap-4">
-          <div className="bg-white p-5 rounded-3xl border border-slate-100 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Sunrise size={24} /></div>
-              <div><p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Saharlik</p><h3 className="text-lg font-bold">Bomdod</h3></div>
+        {/* Status Card */}
+        <div className={`relative overflow-hidden rounded-[2.5rem] p-8 mb-6 ${isFasting ? 'bg-emerald-600 shadow-emerald-100' : 'bg-slate-900 shadow-slate-200'} text-white shadow-2xl transition-colors duration-500`}>
+          <div className="relative z-10 flex justify-between items-end">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-70 mb-1">Hozirgi holat</p>
+              <h2 className="text-4xl font-black tracking-tight">{isFasting ? "Ro'za" : "Iftor"}</h2>
             </div>
-            <div className="text-2xl font-black text-slate-900">{todayData.fajr}</div>
-          </div>
-          <div className="bg-white p-5 rounded-3xl border border-slate-100 flex items-center justify-between shadow-sm">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center"><Sunset size={24} /></div>
-              <div><p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Iftorlik</p><h3 className="text-lg font-bold">Shom</h3></div>
+            <div className="text-right">
+              <div className="text-2xl font-light opacity-90">{currentTime.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}</div>
             </div>
-            <div className="text-2xl font-black text-slate-900">{todayData.maghrib}</div>
+          </div>
+          {/* Background Decorative Circle */}
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+
+        {/* Dua Card - Minimalistic & Interactive */}
+        <motion.div 
+          key={isFasting ? 'iftor' : 'sahar'}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-[2rem] p-6 mb-6 border border-slate-100 shadow-sm relative group"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <BookOpen size={14} className="text-emerald-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{duaData.title}</span>
+          </div>
+          <p className="text-xl font-arabic text-right text-slate-800 leading-loose mb-3" dir="rtl">
+            {duaData.arabic}
+          </p>
+          <p className="text-xs font-bold text-emerald-700 leading-relaxed mb-2">
+            {duaData.reading}
+          </p>
+          <p className="text-[10px] text-slate-400 leading-relaxed italic">
+            "{duaData.translation}"
+          </p>
+        </motion.div>
+
+        {/* Times Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
+              <Sun size={20} />
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quyosh chiqishi</p>
+            <h3 className="text-xl font-black text-slate-900">{todayData.shuruk}</h3>
+          </div>
+
+          <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3">
+              <Sunset size={20} />
+            </div>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Iftorlik (Shom)</p>
+            <h3 className="text-xl font-black text-slate-900">{todayData.maghrib}</h3>
           </div>
         </div>
+
+        {/* Ramazon Progress */}
+        <div className="mt-6 bg-white rounded-3xl p-5 border border-slate-100 flex items-center justify-between shadow-sm">
+           <div className="flex gap-4">
+              <div className="text-center">
+                <div className="text-lg font-black text-slate-900">{todayData.day}</div>
+                <div className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Kun</div>
+              </div>
+              <div className="w-[1px] bg-slate-100 h-8"></div>
+              <div className="text-center">
+                <div className="text-lg font-black text-slate-900">{30 - todayData.day}</div>
+                <div className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Qoldi</div>
+              </div>
+           </div>
+           <div className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full uppercase">
+             {Math.round((todayData.day / 30) * 100)}% yakunlandi
+           </div>
+        </div>
+
       </main>
     </div>
   );

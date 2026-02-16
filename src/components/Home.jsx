@@ -11,7 +11,7 @@ export function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const todayData = DEV_MODE ? ramadanTimetable[0] : 
+  const todayData = DEV_MODE ? ramadanTimetable[5] : 
     ramadanTimetable.find(d => d.date.includes(currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })));
 
   if (!todayData) return null;
@@ -26,15 +26,15 @@ export function Home() {
   const duaData = isFasting 
     ? {
         title: "Iftorlik duosi",
-        arabic: "اللّٰهُمَّ اِنِّى لَكَ صُمْتُ وَبِكَ اٰمَنْتُ وَعَلَيْكَ تَوَكَّلْتُ وَعَلٰى رِزْقِكَ اَفْطَرْتُ",
-        reading: "Allohumma inni laka sumtu va bika aamantu va alayka tavakkaltu va ala rizqika aftartu",
-        translation: "Allohim, Sening uchun ro'za tutdim, Senga iymon keltirdim va Senga tavakkal qildim va bergan rizqing bilan iftor qildim."
+        arabic: "اَللَّهُمَّ لَكَ صُمْتُ وَ بِكَ آمَنْتُ وَ عَلَيْكَ تَوَكَّلْتُ وَ عَلَى رِزْقِكَ أَفْتَرْتُ، فَغْفِرْلِى مَا قَدَّمْتُ وَ مَا أَخَّرْتُ بِرَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
+        reading: "Allohumma laka sumtu va bika aamantu va ’alayka tavakkaltu va ’alaa rizqika aftortu, fag‘firlii yaa G‘offaru maa qoddamtu va maa axxortu, birohmatika yaa arhamar-Rohimiyn",
+        translation: "Ey Alloh, ushbu Ro‘zamni Sen uchun tutdim va Senga iymon keltirdim va Senga tavakkal qildim va bergan rizqing bilan iftor qildim. Ey mehribonlarning eng mehriboni, mening avvalgi va keyingi gunohlarimni mag‘firat qilgil."
       }
     : {
         title: "Saharlik (Niyat) duosi",
-        arabic: "وَبِصَوْمِ غَدٍ نَّوَيْتُ مِنْ شَهْرِ رَمَضَانَ",
-        reading: "Va bisovmi ghadin navaytu min shahri ramazon",
-        translation: "Ramazon oyining ertangi ro'zasini tutishni niyat qildim."
+        arabic: "نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرَ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ، خَالِصًا لِلهِ تَعَالَى أَللهُ أَكْبَرُ",
+        reading: "Navaytu an asuuma sovma shahri ramazona minal-fajri ilal-mag‘ribi, xolisan lillahi ta’aalaa. Alloh-u akbar",
+        translation: "Ramazon oyining ro‘zasini subhdan to kun botguncha tutmoqni niyat qildim. Xolis Alloh uchun Alloh buyukdir."
       };
 
   return (
@@ -103,8 +103,8 @@ export function Home() {
             <div className="w-10 h-10 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center mb-3">
               <Sun size={20} />
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quyosh chiqishi</p>
-            <h3 className="text-xl font-black text-slate-900">{todayData.shuruk}</h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bomdod</p>
+            <h3 className="text-xl font-black text-slate-900">{todayData.fajr}</h3>
           </div>
 
           <div className="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm">

@@ -17,14 +17,23 @@ const DEFAULT_ROUTINE = [
 export function DailyRoutine({ routine, setRoutine }) {
   const [inputValue, setInputValue] = useState('');
 
-  // Ma'lumotlarni yuklash
-  useEffect(() => {
+    useEffect(() => {
     const saved = localStorage.getItem('dailyRoutine');
-    if (saved) {
-      setRoutine(JSON.parse(saved));
-    } else {
-      setRoutine(DEFAULT_ROUTINE);
+    const lastResetDate = localStorage.getItem('lastResetDate');
+    const today = new Date().toDateString(); // Masalan: "Mon Feb 16 2026"
+
+    let initialData = saved ? JSON.parse(saved) : DEFAULT_ROUTINE;
+
+    // Agar saqlangan sana bugungiga teng bo'lmasa - hamma narsani 0 qilamiz
+    if (lastResetDate !== today) {
+      initialData = initialData.map(item => ({ ...item, completed: false }));
+      
+      // Yangilangan holatni saqlaymiz
+      localStorage.setItem('dailyRoutine', JSON.stringify(initialData));
+      localStorage.setItem('lastResetDate', today);
     }
+
+    setRoutine(initialData);
   }, [setRoutine]);
 
   // Taskni holatini o'zgartirish

@@ -20,42 +20,66 @@ export function Tasbih({ tasbih, setTasbih }) {
   const increment = () => {
     const tg = window.Telegram?.WebApp;
     const currentToday = tasbih.today || 0;
-
-    // Klassik rejim chegarasi
+  
+    // Klassik rejim uchun 99 lik cheklov (Salovat rejimiga ta'sir qilmaydi)
     if (mode === 'classic' && currentToday >= 99) {
-      if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+      tg?.HapticFeedback?.notificationOccurred('error');
       return;
     }
-
+  
+    // Sanoq cheksiz davom etadi
     const nextToday = currentToday + 1;
     const nextMonthly = (tasbih.monthlyTotal || 0) + 1;
-
-    // Mantiq va Vibratsiya
-    if (tg?.HapticFeedback) {
-      if (mode === 'classic') {
-        if (nextToday === 33 || nextToday === 66 || nextToday === 99) {
-          tg.HapticFeedback.notificationOccurred('success');
-        } else {
-          tg.HapticFeedback.impactOccurred('light');
-        }
+  
+    // 1. Rejimga qarab zikr indeksini hisoblash
+    if (mode === 'zikr') {
+      // Har 11 tada indeks almashadi: 11, 22, 33... da keyingisiga o'tadi
+      if (nextToday % 11 === 0) {
+        tg?.HapticFeedback?.notificationOccurred('medium');
+        setZikrIndex((prev) => (prev + 1) % ZIKRLAR.length);
+        setShowPurpose(false);
       } else {
-        // Zikr (Salovat) rejimi: Har 11-tasida keyingisiga o'tadi
-        if (nextToday % 11 === 0) {
-          tg.HapticFeedback.notificationOccurred('medium');
-          setZikrIndex((prev) => (prev + 1) % ZIKRLAR.length);
-          setShowPurpose(false); // Keyingisiga o'tganda ma'lumotni berkitish
-        } else {
-          tg.HapticFeedback.impactOccurred('light');
-        }
+        tg?.HapticFeedback?.impactOccurred('light');
+      }
+    } else {
+      // Klassik rejim vibratsiyasi
+      if (nextToday === 33 || nextToday === 66 || nextToday === 99) {
+        tg?.HapticFeedback?.notificationOccurred('success');
+      } else {
+        tg?.HapticFeedback?.impactOccurred('light');
       }
     }
-
-    setTapped(true);
-    setTimeout(() => setTapped(false), 100);
-
-    const newData = { ...tasbih, today: nextToday, monthlyTotal: nextMonthly, date: new Date().toDateString() };
+  
+    // 2. Ma'lumotni saqlash (bu yerda storage-ga yoziladi)
+    const newData = { 
+      ...tasbih, 
+      today: nextToday, 
+      monthlyTotal: nextMonthly, 
+      date: new Date().toDateString() 
+    };
     setTasbih(newData);
     localStorage.setItem('tasbihData', JSON.stringify(newData));
+  
+    setTapped(true);
+    setTimeout(() => setTapped(false), 100);
+  };
+  
+  // Reset funksiyasi - hammasini 0 qiladi
+  const handleReset = () => {
+    if (window.confirm("Barcha sanoqlarni nollashni xohlaysizmi?")) {
+      const resetData = {
+        ...tasbih,
+        today: 0,
+        monthlyTotal: 0 // Agar oylikni qolishini xohlasangiz buni o'chirib tashlang
+      };
+      setTasbih(resetData);
+      setZikrIndex(0);
+      localStorage.setItem('tasbihData', JSON.stringify(resetData));
+      
+      if (window.Telegram?.WebApp?.HapticFeedback) {
+        window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
+      }
+    }
   };
 
   const resetAll = () => {

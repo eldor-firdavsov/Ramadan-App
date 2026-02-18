@@ -1,6 +1,7 @@
-export const DEV_MODE = true;
+export const DEV_MODE = false;
 
 export const ramadanTimetable = [
+  { "date": "February 18 Wed", "day": 0, "fajr": "06:05", "sunrise": "07:20", "dhuhr": "12:45", "asr": "16:29", "maghrib": "18:16", "isha": "19:25" },
   { "date": "February 19 Thu", "day": 1, "fajr": "06:04", "sunrise": "07:18", "dhuhr": "12:45", "asr": "16:30", "maghrib": "18:17", "isha": "19:26" },
   { "date": "February 20 Fri", "day": 2, "fajr": "06:03", "sunrise": "07:17", "dhuhr": "12:45", "asr": "16:31", "maghrib": "18:18", "isha": "19:27" },
   { "date": "February 21 Sat", "day": 3, "fajr": "06:02", "sunrise": "07:16", "dhuhr": "12:45", "asr": "16:32", "maghrib": "18:19", "isha": "19:28" },

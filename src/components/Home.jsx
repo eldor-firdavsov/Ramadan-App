@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sunrise, Sunset, MapPin, BookOpen, Sun } from 'lucide-react';
-import { ramadanTimetable, DEV_MODE } from '../data';
+import { ramadanTimetable } from '../data'; // DEV_MODE importdan olib tashlandi
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Home() {
@@ -11,10 +11,18 @@ export function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const todayData = DEV_MODE ? ramadanTimetable[5] : 
-    ramadanTimetable.find(d => d.date.includes(currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })));
+  // Bugungi ma'lumotlarni real vaqt bo'yicha topish
+  const todayData = ramadanTimetable.find(d => 
+    d.date.includes(currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }))
+  );
 
-  if (!todayData) return null;
+  if (!todayData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-400 text-sm">
+        Bugun uchun ma'lumot topilmadi
+      </div>
+    );
+  }
 
   const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
   const [sH, sM] = todayData.fajr.split(':').map(Number);
@@ -26,7 +34,7 @@ export function Home() {
   const duaData = isFasting 
     ? {
         title: "Iftorlik duosi",
-        arabic: "اَللَّهُمَّ لَكَ صُمْتُ وَ بِكَ آمَنْتُ وَ عَلَيْكَ تَوَكَّلْتُ وَ عَلَى رِزْقِكَ أَفْتَرْتُ، فَغْفِرْلِى مَا قَدَّمْتُ وَ مَا أَخَّرْتُ بِرَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
+        arabic: "اَللَّهُمَّ لَكَ صُمْتُ وَ بِكَ آمَنْتُ وَ عَلَيْكَ تَوَكَّلْتُ وَ عَلَى رِزْقِكَ أَفْتَرْتُ، فَغْفِرْلِى مَا قَدَّمْتُ وَ مَا أَخَّرْتُ بِرَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
         reading: "Allohumma laka sumtu va bika aamantu va ’alayka tavakkaltu va ’alaa rizqika aftortu, fag‘firlii yaa G‘offaru maa qoddamtu va maa axxortu, birohmatika yaa arhamar-Rohimiyn",
         translation: "Ey Alloh, ushbu Ro‘zamni Sen uchun tutdim va Senga iymon keltirdim va Senga tavakkal qildim va bergan rizqing bilan iftor qildim. Ey mehribonlarning eng mehriboni, mening avvalgi va keyingi gunohlarimni mag‘firat qilgil."
       }
@@ -71,31 +79,34 @@ export function Home() {
               <div className="text-2xl font-light opacity-90">{currentTime.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })}</div>
             </div>
           </div>
-          {/* Background Decorative Circle */}
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Dua Card - Minimalistic & Interactive */}
-        <motion.div 
-          key={isFasting ? 'iftor' : 'sahar'}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[2rem] p-6 mb-6 border border-slate-100 shadow-sm relative group"
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <BookOpen size={14} className="text-emerald-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{duaData.title}</span>
-          </div>
-          <p className="text-xl font-arabic text-right text-slate-800 leading-loose mb-3" dir="rtl">
-            {duaData.arabic}
-          </p>
-          <p className="text-xs font-bold text-emerald-700 leading-relaxed mb-2">
-            {duaData.reading}
-          </p>
-          <p className="text-[10px] text-slate-400 leading-relaxed italic">
-            "{duaData.translation}"
-          </p>
-        </motion.div>
+        {/* Dua Card */}
+        <AnimatePresence mode="wait">
+          <motion.div 
+            key={isFasting ? 'iftor' : 'sahar'}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white rounded-[2rem] p-6 mb-6 border border-slate-100 shadow-sm relative group"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <BookOpen size={14} className="text-emerald-500" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{duaData.title}</span>
+            </div>
+            <p className="text-xl font-arabic text-right text-slate-800 leading-loose mb-3" dir="rtl">
+              {duaData.arabic}
+            </p>
+            <p className="text-xs font-bold text-emerald-700 leading-relaxed mb-2">
+              {duaData.reading}
+            </p>
+            <p className="text-[10px] text-slate-400 leading-relaxed italic">
+              "{duaData.translation}"
+            </p>
+          </motion.div>
+        </AnimatePresence>
 
         {/* Times Grid */}
         <div className="grid grid-cols-2 gap-4">

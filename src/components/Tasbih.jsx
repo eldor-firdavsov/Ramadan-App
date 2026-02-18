@@ -21,22 +21,27 @@ export function Tasbih({ tasbih, setTasbih }) {
     const tg = window.Telegram?.WebApp;
     const currentToday = tasbih.today || 0;
   
-    // Klassik rejim uchun 99 lik cheklov (Salovat rejimiga ta'sir qilmaydi)
+    // 1. Klassik rejim uchun 99 lik cheklov (Salovatda bu ishlamaydi)
     if (mode === 'classic' && currentToday >= 99) {
       tg?.HapticFeedback?.notificationOccurred('error');
       return;
     }
   
-    // Sanoq cheksiz davom etadi
     const nextToday = currentToday + 1;
     const nextMonthly = (tasbih.monthlyTotal || 0) + 1;
   
-    // 1. Rejimga qarab zikr indeksini hisoblash
+    // 2. Rejimga qarab mantiqni boshqarish
     if (mode === 'zikr') {
-      // Har 11 tada indeks almashadi: 11, 22, 33... da keyingisiga o'tadi
-      if (nextToday % 11 === 0) {
+      // Har 11 tada almashish (11, 22, 33...)
+      if (nextToday > 0 && nextToday % 11 === 0) {
         tg?.HapticFeedback?.notificationOccurred('medium');
-        setZikrIndex((prev) => (prev + 1) % ZIKRLAR.length);
+        
+        // Zikr indeksini yangilash
+        setZikrIndex((prev) => {
+          const nextIdx = prev + 1;
+          return nextIdx >= ZIKRLAR.length ? 0 : nextIdx;
+        });
+        
         setShowPurpose(false);
       } else {
         tg?.HapticFeedback?.impactOccurred('light');
@@ -50,13 +55,14 @@ export function Tasbih({ tasbih, setTasbih }) {
       }
     }
   
-    // 2. Ma'lumotni saqlash (bu yerda storage-ga yoziladi)
+    // 3. Ma'lumotni saqlash
     const newData = { 
       ...tasbih, 
       today: nextToday, 
       monthlyTotal: nextMonthly, 
       date: new Date().toDateString() 
     };
+    
     setTasbih(newData);
     localStorage.setItem('tasbihData', JSON.stringify(newData));
   

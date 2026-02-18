@@ -170,59 +170,70 @@ export function Countdown() {
             </motion.div>
           )}
 
-          {activeTab === 'calendar' && (
-            <motion.div 
-              key="cal"
-              initial={{ opacity: 0, scale: 0.95 }} 
-              animate={{ opacity: 1, scale: 1 }} 
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white p-4 shadow-xl shadow-black/5 overflow-hidden"
-            >
-              <div className="grid grid-cols-7 gap-1 pb-3 mb-2 border-b border-slate-100 text-[9px] font-black uppercase tracking-tighter text-slate-400 text-center">
-                <div>Kun</div>
-                <div>Bomdod</div>
-                <div>Quyosh</div>
-                <div>Peshin</div>
-                <div>Asr</div>
-                <div className="text-emerald-600">Shom</div>
-                <div>Xufton</div>
-              </div>
+{activeTab === 'calendar' && (
+  <motion.div 
+    key="cal"
+    initial={{ opacity: 0, scale: 0.95 }} 
+    animate={{ opacity: 1, scale: 1 }} 
+    exit={{ opacity: 0, scale: 0.95 }}
+    className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white p-4 shadow-xl shadow-black/5 overflow-hidden"
+  >
+    {/* Sarlavha qismi */}
+    <div className="grid grid-cols-7 gap-1 pb-3 mb-2 border-b border-slate-100 text-[9px] font-black uppercase tracking-tighter text-slate-400 text-center">
+      <div>Sana</div> {/* "Kun" dan "Sana" ga o'zgartirildi */}
+      <div>Bomdod</div>
+      <div>Quyosh</div>
+      <div>Peshin</div>
+      <div>Asr</div>
+      <div className="text-emerald-600">Shom</div>
+      <div>Xufton</div>
+    </div>
 
-              <div className="max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
-                {ramadanTimetable.map((item, index) => {
-                  const isToday = item.date.includes(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }));
+    <div className="max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+      {ramadanTimetable.map((item, index) => {
+        // Bugungi kunni aniqlash
+        const isToday = item.date.includes(new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }));
+        
+        // JSONdagi "February 19 Thu" formatidan "19 Fev" qismini ajratib olish
+        const dateParts = item.date.split(' ');
+        const formattedDate = `${dateParts[1]} ${dateParts[0].substring(0, 3)}`;
 
-                  return (
-                    <div 
-                      key={index} 
-                      className={`grid grid-cols-7 gap-1 py-3 border-b border-slate-50 items-center text-center transition-all
-                        ${isToday ? 'bg-emerald-50 rounded-xl text-emerald-700' : 'text-slate-600'}
-                        ${index % 2 === 0 ? '' : 'bg-slate-50/30'}
-                      `}
-                    >
-                      {/* Ramazon kuni */}
-                      <div className="text-[10px] font-black opacity-40">
-                        {item.day < 10 ? `0${item.day}` : item.day}
-                      </div>
-                      
-                      {/* Vaqtlar */}
-                      <div className="text-[11px] font-bold">{item.fajr}</div>
-                      <div className="text-[11px] font-medium opacity-50">{item.sunrise || item.shuruk}</div>
-                      <div className="text-[11px] font-medium opacity-50">{item.dhuhr}</div>
-                      <div className="text-[11px] font-medium opacity-50">{item.asr}</div>
-                      
-                      {/* Shom / Iftor (Alohida urg'u bilan) */}
-                      <div className={`text-[12px] font-black ${isToday ? 'text-emerald-700' : 'text-emerald-600'}`}>
-                        {item.maghrib}
-                      </div>
-                      
-                      <div className="text-[11px] font-medium opacity-50">{item.isha}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          )}
+        return (
+          <div 
+            key={index} 
+            className={`grid grid-cols-7 gap-1 py-3 border-b border-slate-50 items-center text-center transition-all
+              ${isToday ? 'bg-emerald-50 rounded-xl text-emerald-700' : 'text-slate-600'}
+              ${index % 2 === 0 ? '' : 'bg-slate-50/30'}
+            `}
+          >
+            {/* Ramazon kuni va Milodiy sana */}
+            <div className="flex flex-col items-center justify-center leading-tight">
+              <span className="text-[10px] font-black">
+                {item.day < 10 ? `0${item.day}` : item.day}
+              </span>
+              <span className="text-[7px] uppercase font-medium opacity-40">
+                {formattedDate}
+              </span>
+            </div>
+            
+            {/* Vaqtlar */}
+            <div className="text-[11px] font-bold">{item.fajr}</div>
+            <div className="text-[11px] font-medium opacity-50">{item.sunrise || item.shuruk}</div>
+            <div className="text-[11px] font-medium opacity-50">{item.dhuhr}</div>
+            <div className="text-[11px] font-medium opacity-50">{item.asr}</div>
+            
+            {/* Shom / Iftor */}
+            <div className={`text-[12px] font-black ${isToday ? 'text-emerald-700' : 'text-emerald-600'}`}>
+              {item.maghrib}
+            </div>
+            
+            <div className="text-[11px] font-medium opacity-50">{item.isha}</div>
+          </div>
+        );
+      })}
+    </div>
+  </motion.div>
+)}
         </AnimatePresence>
       </main>
     </div>

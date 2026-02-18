@@ -64,13 +64,12 @@ export function Tasbih({ tasbih, setTasbih }) {
     setTimeout(() => setTapped(false), 100);
   };
   
-  // Reset funksiyasi - hammasini 0 qiladi
   const handleReset = () => {
     if (window.confirm("Barcha sanoqlarni nollashni xohlaysizmi?")) {
       const resetData = {
         ...tasbih,
         today: 0,
-        monthlyTotal: 0 // Agar oylikni qolishini xohlasangiz buni o'chirib tashlang
+        monthlyTotal: 0
       };
       setTasbih(resetData);
       setZikrIndex(0);
@@ -89,7 +88,6 @@ export function Tasbih({ tasbih, setTasbih }) {
     }
   };
 
-  // Hozirgi ko'rsatiladigan zikrni aniqlash
   const currentData = mode === 'classic' 
     ? (tasbih.today < 33 ? CLASSIC_ZIKRS[0] : tasbih.today < 66 ? CLASSIC_ZIKRS[1] : CLASSIC_ZIKRS[2])
     : ZIKRLAR[zikrIndex];
@@ -97,7 +95,6 @@ export function Tasbih({ tasbih, setTasbih }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] px-4 space-y-4">
       
-      {/* Rejim tanlagich */}
       <div className="flex bg-white/60 backdrop-blur-xl p-1.5 rounded-[2rem] border border-white shadow-inner w-full max-w-[320px]">
         <button 
           onClick={() => { setMode('classic'); setTasbih({...tasbih, today: 0}); }}
@@ -115,7 +112,6 @@ export function Tasbih({ tasbih, setTasbih }) {
 
       <div className="w-full max-w-[400px] bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] border border-emerald-50/50 p-8 relative overflow-hidden">
         
-        {/* Zikr Matnlari Konteyneri */}
         <div className="text-center min-h-[160px] flex flex-col justify-center relative">
           <AnimatePresence mode="wait">
             <motion.div

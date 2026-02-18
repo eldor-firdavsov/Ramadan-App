@@ -179,7 +179,7 @@ export function Countdown() {
     className="bg-white/90 backdrop-blur-md rounded-[2.5rem] border border-white p-4 shadow-xl shadow-black/5 overflow-hidden"
   >
     {/* Sarlavha qismi */}
-    <div className="grid grid-cols-7 gap-1 pb-3 mb-2 border-b border-slate-100 text-[9px] font-black uppercase tracking-tighter text-slate-400 text-center">
+    <div className="grid grid-cols-7 gap-3  pb-3 mb-2 border-b border-slate-100 text-[9px] font-black uppercase tracking-tighter text-slate-400 text-center">
       <div>Sana</div> {/* "Kun" dan "Sana" ga o'zgartirildi */}
       <div>Bomdod</div>
       <div>Quyosh</div>

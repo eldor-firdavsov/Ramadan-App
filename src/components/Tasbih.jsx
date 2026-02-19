@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RotateCcw, Fingerprint, Sparkles, BookOpen, Info } from 'lucide-react';
 
-// Siz yuborgan ro'yxatni shu yerga import qiling yoki joylashtiring
-import { ZIKRLAR } from '../data/'; 
+import { ZIKRLAR } from '../data/';
 
 const CLASSIC_ZIKRS = [
-  { name: "Subhanallah", arabic: "سُبْحَانَ اللَّهِ", uz_reading: "Subhanalloh", uz_translation: "Alloh barcha ayb-nuqsonlardan pokdir." },
-  { name: "Alhamdulillah", arabic: "الْحَمْدُ لِلَّهِ", uz_reading: "Alhamdulillah", uz_translation: "Allohga hamd bo'lsin." },
-  { name: "Allahu Akbar", arabic: "اللَّهُ أَكْبَرُ", uz_reading: "Allohu Akbar", uz_translation: "Alloh buyukdir." }
+  { name: "Subhanallah", arabic: "سُبْحَانَ اللَّهِ", uz_reading: "Subhanalloh", uz_translation: "Alloh barcha ayb-nuqsonlardan pokdir." },
+  { name: "Alhamdulillah", arabic: "الْحَمْدُ لِلَّهِ", uz_reading: "Alhamdulillah", uz_translation: "Allohga hamd bo'lsin." },
+  { name: "Allahu Akbar", arabic: "اللَّهُ أَكْبَرُ", uz_reading: "Allohu Akbar", uz_translation: "Alloh buyukdir." }
 ];
 
 export function Tasbih({ tasbih, setTasbih }) {
@@ -16,10 +15,7 @@ export function Tasbih({ tasbih, setTasbih }) {
   const [mode, setMode] = useState('classic'); 
   const [zikrIndex, setZikrIndex] = useState(0);
   const [showPurpose, setShowPurpose] = useState(false);
-  const [zikrCount, setZikrCount] = useState(0);
 
-
-  
   const increment = () => {
     const tg = window.Telegram?.WebApp;
     const currentToday = tasbih.today || 0;
@@ -33,38 +29,52 @@ export function Tasbih({ tasbih, setTasbih }) {
     const nextMonthly = (tasbih.monthlyTotal || 0) + 1;
   
     if (mode === 'zikr') {
-      const nextZikrCount = zikrCount + 1;
-  
-      if (nextZikrCount === 11) {
+      if (nextToday % 11 === 0) {
         tg?.HapticFeedback?.notificationOccurred('medium');
-  
-        setZikrIndex((prev) =>
-          prev + 1 >= ZIKRLAR.length ? prev : prev + 1
-        );
-  
+        
+        setZikrIndex((prev) => {
+          const nextIdx = prev + 1;
+          return nextIdx >= ZIKRLAR.length ? 0 : nextIdx;
+        });
+        
         setShowPurpose(false);
+
+        const newData = { 
+          ...tasbih, 
+          today: 0,
+          monthlyTotal: nextMonthly, 
+          date: new Date().toDateString() 
+        };
+        setTasbih(newData);
+        localStorage.setItem('tasbihData', JSON.stringify(newData));
       } else {
         tg?.HapticFeedback?.impactOccurred('light');
+
+        const newData = { 
+          ...tasbih, 
+          today: nextToday, 
+          monthlyTotal: nextMonthly, 
+          date: new Date().toDateString() 
+        };
+        setTasbih(newData);
+        localStorage.setItem('tasbihData', JSON.stringify(newData));
       }
-  
-      setZikrCount(nextZikrCount);
     } else {
       if (nextToday === 33 || nextToday === 66 || nextToday === 99) {
         tg?.HapticFeedback?.notificationOccurred('success');
       } else {
         tg?.HapticFeedback?.impactOccurred('light');
       }
+
+      const newData = { 
+        ...tasbih, 
+        today: nextToday, 
+        monthlyTotal: nextMonthly, 
+        date: new Date().toDateString() 
+      };
+      setTasbih(newData);
+      localStorage.setItem('tasbihData', JSON.stringify(newData));
     }
-  
-    const newData = {
-      ...tasbih,
-      today: nextToday,
-      monthlyTotal: nextMonthly,
-      date: new Date().toDateString()
-    };
-  
-    setTasbih(newData);
-    localStorage.setItem('tasbihData', JSON.stringify(newData));
   
     setTapped(true);
     setTimeout(() => setTapped(false), 100);
@@ -97,6 +107,8 @@ export function Tasbih({ tasbih, setTasbih }) {
   const currentData = mode === 'classic' 
     ? (tasbih.today < 33 ? CLASSIC_ZIKRS[0] : tasbih.today < 66 ? CLASSIC_ZIKRS[1] : CLASSIC_ZIKRS[2])
     : ZIKRLAR[zikrIndex];
+
+  const displayCount = mode === 'zikr' ? (tasbih.today % 11 || (tasbih.today > 0 && tasbih.today % 11 === 0 ? 0 : tasbih.today)) : (tasbih.today || 0);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] px-4 space-y-4">
@@ -140,7 +152,6 @@ export function Tasbih({ tasbih, setTasbih }) {
             </motion.div>
           </AnimatePresence>
           
-          {/* Maqsadi (Purpose) uchun info tugmasi faqat Salovat rejimida */}
           {mode === 'zikr' && currentData.purpose && (
             <button 
               onClick={() => setShowPurpose(!showPurpose)}
@@ -151,7 +162,6 @@ export function Tasbih({ tasbih, setTasbih }) {
           )}
         </div>
 
-        {/* Maqsad (Purpose) Popup */}
         <AnimatePresence>
           {showPurpose && (
             <motion.div 
@@ -168,7 +178,6 @@ export function Tasbih({ tasbih, setTasbih }) {
           )}
         </AnimatePresence>
 
-        {/* Asosiy Sanoq Tugmasi */}
         <button 
           onClick={increment}
           className="w-full flex flex-col items-center justify-center py-4 select-none outline-none group active:opacity-80"
@@ -179,10 +188,13 @@ export function Tasbih({ tasbih, setTasbih }) {
               transition={{ type: "spring", stiffness: 600, damping: 20 }}
               className={`text-[110px] font-black leading-none tracking-tighter transition-colors ${mode === 'classic' && tasbih.today >= 99 ? 'text-red-500' : 'text-slate-900'}`}
             >
-              {tasbih.today || 0}
+              {mode === 'zikr' ? (tasbih.today || 0) : (tasbih.today || 0)}
             </motion.div>
             {mode === 'classic' && (
               <span className="absolute -right-8 bottom-6 text-[10px] font-black text-slate-200">/99</span>
+            )}
+            {mode === 'zikr' && (
+              <span className="absolute -right-8 bottom-6 text-[10px] font-black text-slate-200">/11</span>
             )}
           </div>
           
@@ -192,7 +204,6 @@ export function Tasbih({ tasbih, setTasbih }) {
           </div>
         </button>
 
-        {/* Pastki Stats va Reset */}
         <div className="mt-8 pt-8 border-t border-slate-50 flex justify-between items-end">
           <div className="space-y-1">
             <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest block">Oylik jami</span>

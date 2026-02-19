@@ -35,7 +35,7 @@ export function Tasbih({ tasbih, setTasbih }) {
     if (mode === 'zikr') {
       const nextZikrCount = zikrCount + 1;
   
-      if (nextZikrCount % 11 === 0) {
+      if (nextZikrCount === 11) {
         tg?.HapticFeedback?.notificationOccurred('medium');
   
         setZikrIndex((prev) =>

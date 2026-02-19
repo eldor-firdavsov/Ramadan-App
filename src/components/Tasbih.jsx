@@ -16,12 +16,14 @@ export function Tasbih({ tasbih, setTasbih }) {
   const [mode, setMode] = useState('classic'); 
   const [zikrIndex, setZikrIndex] = useState(0);
   const [showPurpose, setShowPurpose] = useState(false);
+  const [zikrCount, setZikrCount] = useState(0);
 
+
+  
   const increment = () => {
     const tg = window.Telegram?.WebApp;
     const currentToday = tasbih.today || 0;
   
-    // 1. Klassik rejim uchun 99 lik cheklov (Salovatda bu ishlamaydi)
     if (mode === 'classic' && currentToday >= 99) {
       tg?.HapticFeedback?.notificationOccurred('error');
       return;
@@ -30,24 +32,23 @@ export function Tasbih({ tasbih, setTasbih }) {
     const nextToday = currentToday + 1;
     const nextMonthly = (tasbih.monthlyTotal || 0) + 1;
   
-    // 2. Rejimga qarab mantiqni boshqarish
     if (mode === 'zikr') {
-      // Har 11 tada almashish (11, 22, 33...)
-      if (nextToday > 0 && nextToday % 11 === 0) {
+      const nextZikrCount = zikrCount + 1;
+  
+      if (nextZikrCount % 11 === 0) {
         tg?.HapticFeedback?.notificationOccurred('medium');
-        
-        // Zikr indeksini yangilash
-        setZikrIndex((prev) => {
-          const nextIdx = prev + 1;
-          return nextIdx >= ZIKRLAR.length ? 0 : nextIdx;
-        });
-        
+  
+        setZikrIndex((prev) =>
+          prev + 1 >= ZIKRLAR.length ? prev : prev + 1
+        );
+  
         setShowPurpose(false);
       } else {
         tg?.HapticFeedback?.impactOccurred('light');
       }
+  
+      setZikrCount(nextZikrCount);
     } else {
-      // Klassik rejim vibratsiyasi
       if (nextToday === 33 || nextToday === 66 || nextToday === 99) {
         tg?.HapticFeedback?.notificationOccurred('success');
       } else {
@@ -55,14 +56,13 @@ export function Tasbih({ tasbih, setTasbih }) {
       }
     }
   
-    // 3. Ma'lumotni saqlash
-    const newData = { 
-      ...tasbih, 
-      today: nextToday, 
-      monthlyTotal: nextMonthly, 
-      date: new Date().toDateString() 
+    const newData = {
+      ...tasbih,
+      today: nextToday,
+      monthlyTotal: nextMonthly,
+      date: new Date().toDateString()
     };
-    
+  
     setTasbih(newData);
     localStorage.setItem('tasbihData', JSON.stringify(newData));
   

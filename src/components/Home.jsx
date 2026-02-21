@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Moon, Sunrise, Sunset, MapPin, BookOpen, Sun } from 'lucide-react';
-import { ramadanTimetable } from '../data'; // DEV_MODE importdan olib tashlandi
+import { Moon, Sunrise, Sunset, MapPin, BookOpen, Sun, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ramadanTimetable } from '../data';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function Home() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentDuaIndex, setCurrentDuaIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Bugungi ma'lumotlarni real vaqt bo'yicha topish
   const todayData = ramadanTimetable.find(d => 
     d.date.includes(currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }))
   );
@@ -27,23 +27,29 @@ export function Home() {
   const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes();
   const [sH, sM] = todayData.fajr.split(':').map(Number);
   const [iH, iM] = todayData.maghrib.split(':').map(Number);
-  
+
   const isFasting = nowMinutes >= (sH * 60 + sM) && nowMinutes < (iH * 60 + iM);
 
-  // Duolar ma'lumoti
-  const duaData = isFasting 
-    ? {
-        title: "Iftorlik duosi",
-        arabic: "اَللَّهُمَّ لَكَ صُمْتُ وَ بِكَ آمَنْتُ وَ عَلَيْكَ تَوَكَّلْتُ وَ عَلَى رِزْقِكَ أَفْتَرْتُ، فَغْفِرْلِى مَا قَدَّمْتُ وَ مَا أَخَّرْتُ بِرَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
-        reading: "Allohumma laka sumtu va bika aamantu va ’alayka tavakkaltu va ’alaa rizqika aftortu, fag‘firlii yaa G‘offaru maa qoddamtu va maa axxortu, birohmatika yaa arhamar-Rohimiyn",
-        translation: "Ey Alloh, ushbu Ro‘zamni Sen uchun tutdim va Senga iymon keltirdim va Senga tavakkal qildim va bergan rizqing bilan iftor qildim. Ey mehribonlarning eng mehriboni, mening avvalgi va keyingi gunohlarimni mag‘firat qilgil."
-      }
-    : {
-        title: "Saharlik (Niyat) duosi",
-        arabic: "نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرَ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ، خَالِصًا لِلهِ تَعَالَى أَللهُ أَكْبَرُ",
-        reading: "Navaytu an asuuma sovma shahri ramazona minal-fajri ilal-mag‘ribi, xolisan lillahi ta’aalaa. Alloh-u akbar",
-        translation: "Ramazon oyining ro‘zasini subhdan to kun botguncha tutmoqni niyat qildim. Xolis Alloh uchun Alloh buyukdir."
-      };
+  // Duolar array
+  const duolar = [
+    {
+      title: "Saharlik (Niyat) duosi",
+      arabic: "نَوَيْتُ أَنْ أَصُومَ صَوْمَ شَهْرَ رَمَضَانَ مِنَ الْفَجْرِ إِلَى الْمَغْرِبِ، خَالِصًا لِلهِ تَعَالَى أَللهُ أَكْبَرُ",
+      reading: "Navaytu an asuuma sovma shahri ramazona minal-fajri ilal-mag‘ribi, xolisan lillahi ta’aalaa. Alloh-u akbar",
+      translation: "Ramazon oyining ro‘zasini subhdan to kun botguncha tutmoqni niyat qildim. Xolis Alloh uchun Alloh buyukdir."
+    },
+    {
+      title: "Iftorlik duosi",
+      arabic: "اَللَّهُمَّ لَكَ صُمْتُ وَ بِكَ آمَنْتُ وَ عَلَيْكَ تَوَكَّلْتُ وَ عَلَى رِزْقِكَ أَفْتَرْتُ، فَغْفِرْلِى مَا قَدَّمْتُ وَ مَا أَخَّرْتُ بِرَحْمَتِكَ يَا أَرْحَمَ الرَّاحِمِينَ",
+      reading: "Allohumma laka sumtu va bika aamantu va ’alayka tavakkaltu va ’alaa rizqika aftortu, fag‘firlii yaa G‘offaru maa qoddamtu va maa axxortu, birohmatika yaa arhamar-Rohimiyn",
+      translation: "Ey Alloh, ushbu Ro‘zamni Sen uchun tutdim va Senga iymon keltirdim va Senga tavakkal qildim va bergan rizqing bilan iftor qildim. Ey mehribonlarning eng mehriboni, mening avvalgi va keyingi gunohlarimni mag‘firat qilgil."
+    }
+  ];
+
+  const currentDua = duolar[currentDuaIndex];
+
+  const nextDua = () => setCurrentDuaIndex((prev) => (prev + 1) % duolar.length);
+  const prevDua = () => setCurrentDuaIndex((prev) => (prev - 1 + duolar.length) % duolar.length);
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen text-slate-800 font-sans pb-20">
@@ -82,29 +88,41 @@ export function Home() {
           <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
         </div>
 
-        {/* Dua Card */}
+        {/* Dua Carousel */}
         <AnimatePresence mode="wait">
           <motion.div 
-            key={isFasting ? 'iftor' : 'sahar'}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            key={currentDuaIndex}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
             className="bg-white rounded-[2rem] p-6 mb-6 border border-slate-100 shadow-sm relative group"
           >
             <div className="flex items-center gap-2 mb-4">
               <BookOpen size={14} className="text-emerald-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{duaData.title}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{currentDua.title}</span>
             </div>
             <p className="text-xl font-arabic text-right text-slate-800 leading-loose mb-3" dir="rtl">
-              {duaData.arabic}
+              {currentDua.arabic}
             </p>
             <p className="text-xs font-bold text-emerald-700 leading-relaxed mb-2">
-              {duaData.reading}
+              {currentDua.reading}
             </p>
             <p className="text-[10px] text-slate-400 leading-relaxed italic">
-              "{duaData.translation}"
+              "{currentDua.translation}"
             </p>
+
+            {/* Navigation buttons */}
+            <div className="absolute top-1/2 left-4 transform -translate-y-1/2">
+              <button onClick={prevDua} className="p-2 rounded-full bg-slate-100 hover:bg-slate-200">
+                <ChevronLeft size={18} />
+              </button>
+            </div>
+            <div className="absolute top-1/2 right-4 transform -translate-y-1/2">
+              <button onClick={nextDua} className="p-2 rounded-full bg-slate-100 hover:bg-slate-200">
+                <ChevronRight size={18} />
+              </button>
+            </div>
           </motion.div>
         </AnimatePresence>
 

@@ -16,70 +16,81 @@ export function Tasbih({ tasbih, setTasbih }) {
   const [zikrIndex, setZikrIndex] = useState(0);
   const [showPurpose, setShowPurpose] = useState(false);
 
-  const increment = () => {
+  // ================= Classic increment =================
+  const incrementClassic = () => {
     const tg = window.Telegram?.WebApp;
-    const currentToday = tasbih.today || 0;
-  
-    if (mode === 'classic' && currentToday >= 99) {
+    const today = tasbih.today || 0;
+
+    if (today >= 99) {
       tg?.HapticFeedback?.notificationOccurred('error');
       return;
     }
-  
-    const nextToday = currentToday + 1;
+
+    const nextToday = today + 1;
     const nextMonthly = (tasbih.monthlyTotal || 0) + 1;
-  
-    if (mode === 'zikr') {
-      if (nextToday % 11 === 0) {
-        tg?.HapticFeedback?.notificationOccurred('medium');
-        
-        setZikrIndex((prev) => {
-          const nextIdx = prev + 1;
-          return nextIdx >= ZIKRLAR.length ? 0 : nextIdx;
-        });
-        
-        setShowPurpose(false);
 
-        const newData = { 
-          ...tasbih, 
-          today: 0,
-          monthlyTotal: nextMonthly, 
-          date: new Date().toDateString() 
-        };
-        setTasbih(newData);
-        localStorage.setItem('tasbihData', JSON.stringify(newData));
-      } else {
-        tg?.HapticFeedback?.impactOccurred('light');
-
-        const newData = { 
-          ...tasbih, 
-          today: nextToday, 
-          monthlyTotal: nextMonthly, 
-          date: new Date().toDateString() 
-        };
-        setTasbih(newData);
-        localStorage.setItem('tasbihData', JSON.stringify(newData));
-      }
+    if (nextToday === 33 || nextToday === 66 || nextToday === 99) {
+      tg?.HapticFeedback?.notificationOccurred('success');
     } else {
-      if (nextToday === 33 || nextToday === 66 || nextToday === 99) {
-        tg?.HapticFeedback?.notificationOccurred('success');
-      } else {
-        tg?.HapticFeedback?.impactOccurred('light');
-      }
-
-      const newData = { 
-        ...tasbih, 
-        today: nextToday, 
-        monthlyTotal: nextMonthly, 
-        date: new Date().toDateString() 
-      };
-      setTasbih(newData);
-      localStorage.setItem('tasbihData', JSON.stringify(newData));
+      tg?.HapticFeedback?.impactOccurred('light');
     }
-  
+
+    const newData = {
+      ...tasbih,
+      today: nextToday,
+      monthlyTotal: nextMonthly,
+      date: new Date().toDateString(),
+    };
+
+    setTasbih(newData);
+    localStorage.setItem('tasbihData', JSON.stringify(newData));
+
     setTapped(true);
     setTimeout(() => setTapped(false), 100);
   };
-  
+
+  // ================= Zikr increment =================
+  const incrementZikr = () => {
+    const tg = window.Telegram?.WebApp;
+    const today = tasbih.today || 0;
+    const monthly = tasbih.monthlyTotal || 0;
+
+    if (today === 11) {
+      tg?.HapticFeedback?.notificationOccurred('medium');
+
+      setZikrIndex((prev) =>
+        prev + 1 >= ZIKRLAR.length ? 0 : prev + 1
+      );
+
+      const newData = {
+        ...tasbih,
+        today: 1,
+        monthlyTotal: monthly + 1,
+        date: new Date().toDateString(),
+      };
+
+      setTasbih(newData);
+      localStorage.setItem('tasbihData', JSON.stringify(newData));
+      return;
+    }
+
+    tg?.HapticFeedback?.impactOccurred('light');
+
+    const newData = {
+      ...tasbih,
+      today: today + 1,
+      monthlyTotal: monthly + 1,
+      date: new Date().toDateString(),
+    };
+
+    setTasbih(newData);
+    localStorage.setItem('tasbihData', JSON.stringify(newData));
+
+    setTapped(true);
+    setTimeout(() => setTapped(false), 100);
+  };
+
+  // ================= Reset functions =================
   const handleReset = () => {
     if (window.confirm("Barcha sanoqlarni nollashni xohlaysizmi?")) {
       const resetData = {
@@ -90,7 +101,7 @@ export function Tasbih({ tasbih, setTasbih }) {
       setTasbih(resetData);
       setZikrIndex(0);
       localStorage.setItem('tasbihData', JSON.stringify(resetData));
-      
+
       if (window.Telegram?.WebApp?.HapticFeedback) {
         window.Telegram.WebApp.HapticFeedback.notificationOccurred('warning');
       }
@@ -104,15 +115,18 @@ export function Tasbih({ tasbih, setTasbih }) {
     }
   };
 
+  // ================= Current zikr/classic =================
   const currentData = mode === 'classic' 
     ? (tasbih.today < 33 ? CLASSIC_ZIKRS[0] : tasbih.today < 66 ? CLASSIC_ZIKRS[1] : CLASSIC_ZIKRS[2])
     : ZIKRLAR[zikrIndex];
 
-  const displayCount = mode === 'zikr' ? (tasbih.today % 11 || (tasbih.today > 0 && tasbih.today % 11 === 0 ? 0 : tasbih.today)) : (tasbih.today || 0);
+  const displayCount = mode === 'zikr' 
+    ? (tasbih.today % 11 || (tasbih.today > 0 && tasbih.today % 11 === 0 ? 0 : tasbih.today)) 
+    : (tasbih.today || 0);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[85vh] px-4 space-y-4">
-      
+
       <div className="flex bg-white/60 backdrop-blur-xl p-1.5 rounded-[2rem] border border-white shadow-inner w-full max-w-[320px]">
         <button 
           onClick={() => { setMode('classic'); setTasbih({...tasbih, today: 0}); }}
@@ -129,7 +143,6 @@ export function Tasbih({ tasbih, setTasbih }) {
       </div>
 
       <div className="w-full max-w-[400px] bg-white rounded-[4rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.12)] border border-emerald-50/50 p-8 relative overflow-hidden">
-        
         <div className="text-center min-h-[160px] flex flex-col justify-center relative">
           <AnimatePresence mode="wait">
             <motion.div
@@ -151,7 +164,7 @@ export function Tasbih({ tasbih, setTasbih }) {
               </div>
             </motion.div>
           </AnimatePresence>
-          
+
           {mode === 'zikr' && currentData.purpose && (
             <button 
               onClick={() => setShowPurpose(!showPurpose)}
@@ -179,7 +192,7 @@ export function Tasbih({ tasbih, setTasbih }) {
         </AnimatePresence>
 
         <button 
-          onClick={increment}
+          onClick={mode === 'classic' ? incrementClassic : incrementZikr}
           className="w-full flex flex-col items-center justify-center py-4 select-none outline-none group active:opacity-80"
         >
           <div className="relative">
@@ -188,7 +201,7 @@ export function Tasbih({ tasbih, setTasbih }) {
               transition={{ type: "spring", stiffness: 600, damping: 20 }}
               className={`text-[110px] font-black leading-none tracking-tighter transition-colors ${mode === 'classic' && tasbih.today >= 99 ? 'text-red-500' : 'text-slate-900'}`}
             >
-              {mode === 'zikr' ? (tasbih.today || 0) : (tasbih.today || 0)}
+              {tasbih.today || 0}
             </motion.div>
             {mode === 'classic' && (
               <span className="absolute -right-8 bottom-6 text-[10px] font-black text-slate-200">/99</span>
@@ -197,7 +210,7 @@ export function Tasbih({ tasbih, setTasbih }) {
               <span className="absolute -right-8 bottom-6 text-[10px] font-black text-slate-200">/11</span>
             )}
           </div>
-          
+
           <div className="mt-4 flex items-center gap-3 bg-slate-50 px-8 py-3 rounded-3xl border border-slate-100 transition-all group-active:scale-95">
             <Fingerprint size={18} className="text-emerald-500" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">Bosish</span>
@@ -212,7 +225,7 @@ export function Tasbih({ tasbih, setTasbih }) {
               <span className="text-xl font-black text-slate-800">{tasbih.monthlyTotal}</span>
             </div>
           </div>
-          
+
           <button 
             onClick={resetAll} 
             className="w-14 h-14 flex items-center justify-center rounded-[1.5rem] bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 active:scale-90 transition-all duration-300 shadow-sm"

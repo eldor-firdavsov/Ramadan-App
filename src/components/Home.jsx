@@ -12,9 +12,13 @@ export function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  const todayData = ramadanTimetable.find(d => 
-    d.date.includes(currentTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }))
-  );
+  const todayData = ramadanTimetable.find(d => {
+    const today = currentTime.toLocaleDateString('en-US', {
+      month: 'long',
+      day: '2-digit'
+    });
+    return d.date.startsWith(today);
+  });
 
   if (!todayData) {
     return (

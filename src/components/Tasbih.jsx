@@ -5,10 +5,9 @@ import { RotateCcw, Fingerprint, Sparkles, BookOpen, Info } from 'lucide-react';
 import { ZIKRLAR } from '../data/';
 
 const CLASSIC_ZIKRS = [
-  { name: "Allahumma innaka `afuwwun tuhibbul `afwa fa`fu `annee", arabic: "  اللْهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُعَنِّي", uz_reading: "Subhanalloh", uz_translation: "Alloh barcha ayb-nuqsonlardan pokdir." },
-  { name: "Allahumma innaka `afuwwun tuhibbul `afwa fa`fu `annee", arabic: "  اللْهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُعَنِّي", uz_reading: "Subhanalloh", uz_translation: "Alloh barcha ayb-nuqsonlardan pokdir." },
-  { name: "Allahumma innaka `afuwwun tuhibbul `afwa fa`fu `annee", arabic: "  اللْهُمَّ إِنَّكَ عَفُوٌّ تُحِبُّ الْعَفْوَ فَاعْفُعَنِّي", uz_reading: "Subhanalloh", uz_translation: "Alloh barcha ayb-nuqsonlardan pokdir." },
-
+  { name: "Subhanallah", arabic: "سُبْحَانَ اللَّهِ", uz_reading: "Subhanalloh", uz_translation: "Alloh barcha ayb-nuqsonlardan pokdir." },
+  { name: "Alhamdulillah", arabic: "الْحَمْدُ لِلَّهِ", uz_reading: "Alhamdulillah", uz_translation: "Allohga hamd bo'lsin." },
+  { name: "Allahu Akbar", arabic: "اللَّهُ أَكْبَرُ", uz_reading: "Allohu Akbar", uz_translation: "Alloh buyukdir." }
 ];
 
 export function Tasbih({ tasbih, setTasbih }) {
